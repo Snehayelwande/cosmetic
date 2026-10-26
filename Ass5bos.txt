@@ -1,0 +1,106 @@
+﻿Assignment 5
+#include<stdio.h>
+int main(){
+  int n,m,p;
+  int allocation[10][10],need[10][10],max[10][10];
+  int available[10],request[10];
+  int work[10],finish[10]={0},safesequence[10];
+  int count=0;
+  printf("enter number of processes:");
+  scanf("%d", &n);
+
+  printf("Enter number of resources:");
+  scanf("%d",&m);
+
+  printf("Enter allocation matrix:");
+  for(int i=0; i<n; i++){
+    for(int j=0;j<m;j++){
+        scanf("%d", &allocation[i][j]);
+    }
+  }
+  printf("Enter maximum matrix:");
+  for(int i=0;i<n;i++){
+    for(int j=0;j<m;j++){
+        scanf("%d", &max[i][j]);
+    }
+  }
+  printf("Enter available resources:");
+  for(int j=0;j<m;j++){
+    scanf("%d", &available[j]);
+  }
+  for(int i=0;i<n;i++)
+    for(int j=0;j<m;j++)
+      need[i][j]=max[i][j]-allocation[i][j];
+  printf("Enter process number (0 to %d):",n-1);
+  scanf("%d",&p);
+  printf("Enter request vector:");
+  for(int j=0;j<m;j++){
+      scanf("%d",&request[j]);
+  }
+  for(int j=0;j<m;j++){
+    if(request[j]>need[p][j]){
+        printf("Error: request exceds need");
+        return 0;
+    }
+  }
+  for(int j=0;j<m;j++){
+    if(request[j]>available[j]){
+        printf("Error: request exceeds available resources");
+        return 0;
+    }
+  }
+  for(int j=0;j<n;j++){
+    available[j]=available[j]-request[j];
+    allocation[p][j]=allocation[p][j]+request[j];
+    need[p][j]=need[p][j]-request[j];
+  }
+  for(int j=0;j<m;j++){
+    work[j]=available[j];
+  }
+  while(count<n){
+    int found=0;
+    for(int i=0;i<n;i++){
+        if(finish[i]==0){
+            int possible=1;
+            for(int j=0;j<m;j++){
+              if(need[i][j]>work[j]){
+                possible=0;
+                break;
+              }          
+            }
+            if(possible){
+                for(int j=0;j<m;j++){
+                    work[j]=work[j]+allocation[i][j];
+                }
+                safesequence[count]=i;
+                count++;
+                finish[i]=1;
+                found=1;
+            }
+        }
+        if(found==0)
+          break;
+        if(count==n){
+            printf("request granted.system is in safe state\n");
+            printf("Safe sequence is:");
+            for(int i=0;i<n;i++){
+                printf("p%d", safesequence[i]);
+                if(i!=n-1)
+                  printf("->");
+            }
+            printf("\n");
+        }
+        else{
+             for(int j=0;j<m;j++){
+                available[j]=available[j]+request[j];
+                allocation[p][j]=allocation[p][j]-request[j];
+                need[p][j]=need[p][j]+request[j]; 
+            }
+            printf("Request DENIED. System would be UNSAFE."); 
+        }
+        return 0;
+       
+    }
+  }
+}
+

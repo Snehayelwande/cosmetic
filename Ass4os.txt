@@ -1,0 +1,63 @@
+﻿Assignment 5
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define N 5
+#define ROUNDS 3
+
+sem_t room;
+sem_t forks[N];
+
+void* philosopher(void* arg)
+{
+ int id=*(int*)arg;
+
+ for(int r = 1; r <= ROUNDS; r++)
+    {
+        sem_wait(&room);
+
+        sem_wait(&forks[id]);
+        sem_wait(&forks[(id+1)%N]);
+
+        printf("philosopher %d is eating (Round %d)\n",id,r);
+        sleep(1);
+
+        sem_post(&forks[(id+1)%N]);
+        sem_post(&forks[id]);
+
+        printf("philosopher %d is thinking (Round %d)\n",id,r);
+        sem_post(&room);
+    }
+
+    return NULL;
+}    
+
+int main()
+{
+    pthread_t t[N];
+    int id[N];
+
+    sem_init(&room,0,4);
+
+    for(int i=0; i<N; i++)
+       sem_init(&forks[i],0,1);
+
+    for(int i=0; i<N; i++)
+    {
+        id[i]=i;
+        pthread_create(&t[i], NULL, philosopher, &id[i]);
+    }
+
+    for(int i=0; i<N; i++)
+       pthread_join(t[i], NULL);
+
+    for(int i=0; i<N; i++)
+       sem_destroy(&forks[i]);
+
+    sem_destroy(&room);
+
+    return 0;
+}
+
