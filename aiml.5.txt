@@ -1,0 +1,83 @@
+﻿import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+
+data = pd.read_csv(r"C:\Users\User\Downloads\train.csv")
+
+data.head(10)
+
+data.duplicated().sum()
+
+data.isnull().sum()
+
+data.drop(columns=["PassengerId", "Name", "Ticket", "Cabin"], inplace=True)
+
+print(type(data))
+
+data.head(10)
+
+data["Age"] = data["Age"].fillna(data["Age"].median())
+
+data["Embarked"] = data["Embarked"].fillna(data["Embarked"].mode()[0])
+
+data.isnull().sum()
+
+data.describe()
+
+print(data["Age"].median())
+
+print(data["Age"].mean())
+
+data["Age"] = pd.to_numeric(data["Age"], errors="coerce")
+
+plt.hist(data["Age"], bins=20, edgecolor="black")
+plt.title("Age Distribution")
+plt.xlabel("Age")
+plt.ylabel("Frequency")
+plt.show()
+
+sns.boxplot(x=data["Age"])
+plt.title("Outliers")
+plt.show()
+
+X = data.drop("Survived", axis=1)
+
+Y = data["Survived"]
+
+X_train, x_test, Y_train, y_test = train_test_split(
+    X, Y, test_size=0.2, random_state=42
+)
+
+numeric = X_train.select_dtypes(include=["int64", "float64"])
+
+categorical = X_train.select_dtypes(include=["string", "object", "category"])
+
+X_train
+
+X_train.dtypes
+
+numeric = X_train.select_dtypes(include=["number"]).columns.tolist()
+
+numeric
+
+categorical = X_train.select_dtypes(include=["string", "object", "category"]).columns.tolist()
+
+categorical
+
+preprocessor = ColumnTransformer([
+    ("num", StandardScaler(), numeric),
+    ("cat", OneHotEncoder(handle_unknown="ignore"), categorical)
+])
+X_train_processed = preprocessor.fit_transform(X_train)
+
+X_train_processed
+
+X_test_processed = preprocessor.transform(x_test)
+
+X_test_processed
+
